@@ -1,15 +1,18 @@
 package com.scaler.advancedecommapplication.services;
 
 import com.scaler.advancedecommapplication.dtos.CartItemRequestDto;
+import com.scaler.advancedecommapplication.dtos.ProductResponseDto;
 import com.scaler.advancedecommapplication.models.CartItem;
 import com.scaler.advancedecommapplication.models.Product;
 import com.scaler.advancedecommapplication.models.User;
 import com.scaler.advancedecommapplication.repositories.CartItemRepository;
 import com.scaler.advancedecommapplication.repositories.ProductRepository;
 import com.scaler.advancedecommapplication.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Service("selfCartService")
@@ -61,5 +64,41 @@ public class SelfCartService implements CartService {
             cartItemRepository.save(cartItem);
         }
         return true;
+    }
+
+    @Transactional
+    @Override
+    public boolean removeFromCart(String userId, Long productId) {
+        Long uid;
+        try {
+            uid = Long.valueOf(userId);
+        } catch (NumberFormatException ex) {
+            // log.warn("Invalid userId: {}", userId, ex);
+            return false;
+        }
+
+        Optional<Product> productOptional = productRepository.findById(productId);
+        if (productOptional.isEmpty()) {
+            return false;
+        }
+
+        Optional<User> userOptional = userRepository.findById(Long.valueOf(userId));
+        if (userOptional.isEmpty()) {
+            return false;
+        }
+
+        Product product = productOptional.get();
+        User user = userOptional.get();
+
+        int deleted = cartItemRepository.deleteByUserAndProduct(user, product);
+        return deleted > 0;
+    }
+
+    @Override
+    public List<CartItem> fetchAllCartItems(String userId) {
+        return userRepository.findById(Long.valueOf(userId))
+                .map(cartItemRepository::findByUser)
+                .orElseGet(List::of);
+
     }
 }
