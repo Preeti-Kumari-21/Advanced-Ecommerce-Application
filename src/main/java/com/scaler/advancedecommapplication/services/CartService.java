@@ -10,4 +10,6 @@ public interface CartService {
     boolean addToCart(String userId, CartItemRequestDto cartItemRequestDto);
     boolean removeFromCart(String userId, Long productId);
     List<CartItem> fetchAllCartItems(String userId);
+
+    void clearCart(String userId);
 }

@@ -1,7 +1,6 @@
 package com.scaler.advancedecommapplication.services;
 
 import com.scaler.advancedecommapplication.dtos.CartItemRequestDto;
-import com.scaler.advancedecommapplication.dtos.ProductResponseDto;
 import com.scaler.advancedecommapplication.models.CartItem;
 import com.scaler.advancedecommapplication.models.Product;
 import com.scaler.advancedecommapplication.models.User;
@@ -100,5 +99,12 @@ public class SelfCartService implements CartService {
                 .map(cartItemRepository::findByUser)
                 .orElseGet(List::of);
 
+    }
+
+    @Override
+    public void clearCart(String userId) {
+        userRepository.findById(Long.valueOf(userId)).ifPresent(user -> {
+            cartItemRepository.deleteByUser(user);
+        });
     }
 }
